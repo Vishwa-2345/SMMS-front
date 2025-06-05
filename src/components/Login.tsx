@@ -46,3 +46,4 @@ const Login: React.FC<LoginProps> = ({ onStaffLogin, onStudentLogin }) => {
 
 export default Login;
 
+

@@ -5,7 +5,7 @@ import Particles from 'react-tsparticles';
 import { loadSlim } from 'tsparticles-slim';
 import type { Engine } from 'tsparticles-engine';
 import { motion, AnimatePresence } from 'framer-motion';
-import Login from '../components/login';
+import Login from '../components/Login';
 import StaffLoginPage from '../components/StaffLoginPage';
 import StudentLoginPage from '../components/StudentLoginPage';
 
@@ -105,4 +105,5 @@ const ParticlePage: React.FC = () => {
 };
 
 export default ParticlePage;
+
 

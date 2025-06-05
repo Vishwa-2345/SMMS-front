@@ -1,14 +1,29 @@
 
-
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaUserAlt, FaLock } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   onClose: () => void;
 }
 
 const StaffLoginCard: React.FC<Props> = ({ onClose }) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    if (username === "admin" && password === "admin123") {
+      navigate("/admin-dashboard");
+    } else if (username === "staff" && password === "staff123") {
+      navigate("/staff-dashboard");
+    } else {
+      setError("Invalid credentials");
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -44,6 +59,8 @@ const StaffLoginCard: React.FC<Props> = ({ onClose }) => {
           <input
             type="text"
             placeholder="Email or Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="w-full outline-none"
           />
         </div>
@@ -53,11 +70,18 @@ const StaffLoginCard: React.FC<Props> = ({ onClose }) => {
           <input
             type="password"
             placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full outline-none"
           />
         </div>
 
-        <button className="bg-[#00FA9A] text-black py-2 rounded-md font-semibold hover:bg-[#00c976] transition">
+        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+        <button
+          onClick={handleLogin}
+          className="bg-[#00FA9A] text-black py-2 rounded-md font-semibold hover:bg-[#00c976] transition"
+        >
           Sign In
         </button>
       </motion.div>
@@ -84,6 +108,5 @@ const StaffLoginCard: React.FC<Props> = ({ onClose }) => {
 };
 
 export default StaffLoginCard;
-
 
 

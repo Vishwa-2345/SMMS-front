@@ -1,87 +1,88 @@
 
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { FaUserAlt, FaLock } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
+import { useNavigate } from 'react-router-dom';
 
-import React from "react";
-import { motion } from "framer-motion";
-import { FaUserAlt, FaLock } from "react-icons/fa";
-
-interface Props {
+interface StudentLoginPageProps {
   onClose: () => void;
 }
 
-const StudentLoginCard: React.FC<Props> = ({ onClose }) => {
+const StudentLoginPage: React.FC<StudentLoginPageProps> = ({ onClose }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    if (username === 'student' && password === 'student123') {
+      navigate('/student-dashboard');
+    } else {
+      alert('Invalid student credentials');
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.4 } }}
-      whileHover={{ scale: 1.01 }}
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5 }}
-      className="relative flex w-[90%] max-w-4xl h-[420px] rounded-2xl shadow-2xl overflow-hidden bg-white"
+      className="relative w-[90%] max-w-4xl h-[420px] bg-white rounded-2xl shadow-2xl overflow-hidden flex"
     >
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-3 right-4 text-2xl text-gray-600 hover:text-red-500 z-10"
-        aria-label="Close login card"
+        className="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-xl transition"
       >
-        ×
+        <IoClose />
       </button>
 
-      {/* Left 40% - Login Form */}
-      <motion.div
-        initial={{ x: -40, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: -40, opacity: 0, transition: { duration: 0.3 } }}
-        transition={{ duration: 0.6 }}
-        className="w-2/5 bg-white p-8 flex flex-col justify-center gap-5"
-      >
-        <h3 className="text-2xl font-bold text-[#00FA9A] text-center">
-          🎒 Student Login
-        </h3>
+      {/* Left - 40% - Form */}
+      <div className="w-2/5 bg-white p-8 flex flex-col justify-center gap-4">
+        <h2 className="text-2xl font-bold mb-2">🎒 Student Login</h2>
 
-        <div className="flex items-center border border-gray-300 rounded-md px-4 py-2 focus-within:ring-2 focus-within:ring-[#00FA9A]">
-          <FaUserAlt className="text-gray-400 mr-2" />
+        <div className="flex items-center border rounded px-3 py-2">
+          <FaUserAlt className="mr-2 text-gray-500" />
           <input
             type="text"
             placeholder="Email or Username"
             className="w-full outline-none"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </div>
 
-        <div className="flex items-center border border-gray-300 rounded-md px-4 py-2 focus-within:ring-2 focus-within:ring-[#00FA9A]">
-          <FaLock className="text-gray-400 mr-2" />
+        <div className="flex items-center border rounded px-3 py-2">
+          <FaLock className="mr-2 text-gray-500" />
           <input
             type="password"
             placeholder="Password"
             className="w-full outline-none"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
 
-        <button className="bg-[#00FA9A] text-black py-2 rounded-md font-semibold hover:bg-[#00c976] transition">
+        <button
+          className="bg-[#00FA9A] text-white py-2 rounded hover:scale-105 transition duration-300"
+          onClick={handleLogin}
+        >
           Sign In
         </button>
-      </motion.div>
+      </div>
 
-      {/* Right 60% - Welcome Section */}
-      <motion.div
-        initial={{ x: 40, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: 40, opacity: 0, transition: { duration: 0.3 } }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="w-3/5 bg-[#00FFFF] text-black p-10 flex flex-col justify-center"
-      >
-        <h2 className="text-3xl font-bold mb-3 animate-pulse">
-          Welcome Back, Student! 🎒
-        </h2>
-        <p className="text-lg opacity-90 leading-relaxed">
-          Access your classes, assignments, and grades easily. Stay connected with your teachers and classmates!
+      {/* Right - 60% - Info/Design */}
+      <div className="w-3/5 bg-[#00FA9A] text-white p-10 flex flex-col justify-center">
+        <h2 className="text-4xl font-bold mb-4">Hello Student 👋</h2>
+        <p className="text-lg">
+          Enter your student credentials to access your classes, marks, and updates.
         </p>
-      </motion.div>
+      </div>
     </motion.div>
   );
 };
 
-export default StudentLoginCard;
-
+export default StudentLoginPage;
 
 
