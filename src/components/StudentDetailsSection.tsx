@@ -1,87 +1,208 @@
 
-import React, { useState } from "react";
-import { FaUserGraduate, FaTimes } from "react-icons/fa";
-import studentsData from "../data/studentsData";
 
+import React, { useState } from "react";
+import { FaUserGraduate, FaSearch, FaPlus, FaTrash, FaPencilAlt } from "react-icons/fa";
+import studentsData from "../data/studentsData";
+import StudentFormModal from "./StudentFormModal";
+
+type Section = "none" | "details" | "marks" | "attendance";
+
+// Local definition of Student interface
 interface Student {
   id: string;
   name: string;
-  fatherName: string;
-  motherName: string;
-  mobile: string;
-  photoUrl?: string;
+  className: string;
+  email: string;
+  marks?: { subject: string; mark: number }[];
+  attendance?: { date: string; status: string }[];
 }
 
 const StudentDetailsSection: React.FC = () => {
-  const [searchName, setSearchName] = useState("");
-  const [searchId, setSearchId] = useState("");
-  const [filteredStudent, setFilteredStudent] = useState<Student | null>(null);
-
-  // Stepper state for form steps
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [formStep, setFormStep] = useState(1);
-
-  // Form fields state
-  const [newName, setNewName] = useState("");
-  const [newId, setNewId] = useState("");
-  const [newFatherName, setNewFatherName] = useState("");
-  const [newMotherName, setNewMotherName] = useState("");
-  const [newMobile, setNewMobile] = useState("");
+  const [activeSection, setActiveSection] = useState<Section>("none");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [students, setStudents] = useState<Student[]>(studentsData);
 
   const handleSearch = () => {
-    const found = studentsData.find(
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) {
+      setFilteredStudents([]);
+      setSelectedStudent(null);
+      return;
+    }
+    const results = students.filter(
       (student) =>
-        student.name.toLowerCase().trim() === searchName.toLowerCase().trim() &&
-        student.id.toLowerCase().trim() === searchId.toLowerCase().trim()
+        student.name.toLowerCase().includes(term) ||
+        student.id.toLowerCase().includes(term)
     );
-    setFilteredStudent(found || null);
+    setFilteredStudents(results);
+    setSelectedStudent(null);
   };
 
-  const openAddForm = () => {
-    setShowAddForm(true);
-    setFormStep(1);
-    setNewName("");
-    setNewId("");
-    setNewFatherName("");
-    setNewMotherName("");
-    setNewMobile("");
+  const openAddModal = () => {
+    setSelectedStudent(null);
+    setIsModalOpen(true);
   };
 
-  const closeAddForm = () => {
-    setShowAddForm(false);
+  const openEditModal = (student: Student) => {
+    setSelectedStudent(student);
+    setIsModalOpen(true);
   };
 
-  const nextStep = () => {
-    if (formStep === 1) {
-      if (!newName.trim() || !newId.trim()) {
-        alert("Please fill in Name and ID.");
-        return;
-      }
-      setFormStep(2);
-    } else if (formStep === 2) {
-      if (
-        !newFatherName.trim() ||
-        !newMotherName.trim() ||
-        !newMobile.trim()
-      ) {
-        alert("Please fill in all fields.");
-        return;
-      }
-      // Save new student here or handle it as needed
-      alert(`Added student:\nName: ${newName}\nID: ${newId}\nFather: ${newFatherName}\nMother: ${newMotherName}\nMobile: ${newMobile}`);
-      closeAddForm();
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleFormSubmit = (studentData: Student) => {
+    if (selectedStudent) {
+      setStudents((prev) =>
+        prev.map((stu) => (stu.id === studentData.id ? studentData : stu))
+      );
+    } else {
+      setStudents((prev) => [...prev, studentData]);
     }
+    setIsModalOpen(false);
+    setFilteredStudents([]);
+    setSearchTerm("");
   };
 
-  const prevStep = () => {
-    if (formStep === 2) {
-      setFormStep(1);
+  const handleDelete = () => {
+    if (!searchTerm.trim()) {
+      alert("Please search student to delete by name or ID.");
+      return;
     }
+    if (!window.confirm("Are you sure you want to delete the searched students?")) {
+      return;
+    }
+    setStudents((prev) =>
+      prev.filter(
+        (student) =>
+          !filteredStudents.some((fStu) => fStu.id === student.id)
+      )
+    );
+    setFilteredStudents([]);
+    setSearchTerm("");
+  };
+
+  const renderStudentTable = () => (
+    <table className="min-w-full border border-gray-300">
+      <thead className="bg-indigo-100">
+        <tr>
+          <th className="border px-4 py-2 text-left">Name</th>
+          <th className="border px-4 py-2 text-left">ID</th>
+          <th className="border px-4 py-2 text-left">Class</th>
+          {activeSection === "details" && <th className="border px-4 py-2 text-left">Edit</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {filteredStudents.length === 0 ? (
+          <tr>
+            <td colSpan={4} className="text-center p-4 text-gray-500 italic">
+              No matching students found.
+            </td>
+          </tr>
+        ) : (
+          filteredStudents.map((student) => (
+            <tr key={student.id} className="hover:bg-indigo-50">
+              <td className="border px-4 py-2">{student.name}</td>
+              <td className="border px-4 py-2">{student.id}</td>
+              <td className="border px-4 py-2">{student.className}</td>
+              {activeSection === "details" && (
+                <td className="border px-4 py-2 text-center">
+                  <button
+                    onClick={() => openEditModal(student)}
+                    className="text-indigo-600 hover:text-indigo-900"
+                    aria-label="Edit student"
+                  >
+                    <FaPencilAlt />
+                  </button>
+                </td>
+              )}
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  );
+
+  const renderMarksTable = () => {
+    if (filteredStudents.length === 0) {
+      return <p className="italic text-gray-500 mt-4">No matching students found.</p>;
+    }
+    return filteredStudents.map((student) => (
+      <div key={student.id} className="mb-6 border rounded p-4 shadow-sm bg-white">
+        <h4 className="font-semibold mb-2 text-indigo-700">
+          {student.name} ({student.id}) - Class {student.className}
+        </h4>
+        <table className="min-w-full border border-gray-300">
+          <thead className="bg-indigo-100">
+            <tr>
+              <th className="border px-4 py-2 text-left">Subject</th>
+              <th className="border px-4 py-2 text-left">Mark</th>
+            </tr>
+          </thead>
+          <tbody>
+            {student.marks && student.marks.length > 0 ? (
+              student.marks.map((m, idx) => (
+                <tr key={idx} className="hover:bg-indigo-50">
+                  <td className="border px-4 py-2">{m.subject}</td>
+                  <td className="border px-4 py-2">{m.mark}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={2} className="text-center p-4 italic text-gray-500">
+                  No marks available.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    ));
+  };
+
+  const renderAttendanceTable = () => {
+    if (filteredStudents.length === 0) {
+      return <p className="italic text-gray-500 mt-4">No matching students found.</p>;
+    }
+    return filteredStudents.map((student) => (
+      <div key={student.id} className="mb-6 border rounded p-4 shadow-sm bg-white">
+        <h4 className="font-semibold mb-2 text-indigo-700">
+          {student.name} ({student.id}) - Class {student.className}
+        </h4>
+        <table className="min-w-full border border-gray-300">
+          <thead className="bg-indigo-100">
+            <tr>
+              <th className="border px-4 py-2 text-left">Date</th>
+              <th className="border px-4 py-2 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {student.attendance && student.attendance.length > 0 ? (
+              student.attendance.map((a, idx) => (
+                <tr key={idx} className="hover:bg-indigo-50">
+                  <td className="border px-4 py-2">{a.date}</td>
+                  <td className="border px-4 py-2">{a.status}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={2} className="text-center p-4 italic text-gray-500">
+                  No attendance records available.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    ));
   };
 
   return (
     <div className="h-full flex flex-col px-6 py-4">
-      {/* Top 30% Header aligned left with icon and effects */}
       <div className="h-[30%] flex items-center bg-indigo-100 px-6 rounded-md shadow-lg mb-6">
         <FaUserGraduate className="text-indigo-600 w-10 h-10 mr-4 animate-pulse" />
         <h2 className="text-4xl font-extrabold text-indigo-700 drop-shadow-md select-none">
@@ -89,152 +210,101 @@ const StudentDetailsSection: React.FC = () => {
         </h2>
       </div>
 
-      {/* Search Fields and Buttons */}
-      <div className="flex items-center gap-4 flex-wrap mb-6">
-        <input
-          type="text"
-          placeholder="Search by Name"
-          className="border rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Search by ID"
-          className="border rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          value={searchId}
-          onChange={(e) => setSearchId(e.target.value)}
-        />
+      <div className="flex gap-6 mb-6 flex-wrap">
         <button
-          onClick={handleSearch}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+          onClick={() => {
+            setActiveSection((prev) => (prev === "details" ? "none" : "details"));
+            setFilteredStudents([]);
+            setSelectedStudent(null);
+            setSearchTerm("");
+          }}
+          className={`flex-1 bg-indigo-600 text-white py-4 rounded shadow hover:bg-indigo-700 transition
+          ${activeSection === "details" ? "ring-4 ring-indigo-400" : ""}`}
         >
-          Search
+          Student Details
         </button>
         <button
-          onClick={openAddForm}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+          onClick={() => {
+            setActiveSection((prev) => (prev === "marks" ? "none" : "marks"));
+            setFilteredStudents([]);
+            setSelectedStudent(null);
+            setSearchTerm("");
+          }}
+          className={`flex-1 bg-green-600 text-white py-4 rounded shadow hover:bg-green-700 transition
+          ${activeSection === "marks" ? "ring-4 ring-green-400" : ""}`}
         >
-          Add
+          Marks
         </button>
-        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
-          Delete
+        <button
+          onClick={() => {
+            setActiveSection((prev) => (prev === "attendance" ? "none" : "attendance"));
+            setFilteredStudents([]);
+            setSelectedStudent(null);
+            setSearchTerm("");
+          }}
+          className={`flex-1 bg-yellow-600 text-white py-4 rounded shadow hover:bg-yellow-700 transition
+          ${activeSection === "attendance" ? "ring-4 ring-yellow-400" : ""}`}
+        >
+          Attendance
         </button>
       </div>
 
-      {/* Searched Student Detail Card */}
-      <div className="flex justify-center mt-8">
-        {filteredStudent ? (
-          <div className="max-w-4xl w-full bg-white rounded-xl shadow-xl p-6 flex flex-col md:flex-row gap-6 animate-fadeIn border-l-4 border-indigo-600 transition hover:scale-[1.01] duration-300">
-            {/* Student Image */}
-            <div className="flex justify-center items-center">
-              <img
-                src={
-                  filteredStudent.photoUrl ||
-                  "https://via.placeholder.com/150x150.png?text=Student"
-                }
-                alt={filteredStudent.name}
-                className="w-40 h-40 rounded-full object-cover shadow-md border-4 border-indigo-400"
-              />
-            </div>
-
-            {/* Info Section */}
-            <div className="text-gray-800 space-y-2">
-              <h3 className="text-3xl font-bold text-indigo-700">
-                {filteredStudent.name}
-                <span className="text-gray-500 text-xl"> ({filteredStudent.id})</span>
-              </h3>
-              <p><strong>👨‍👧 Father:</strong> {filteredStudent.fatherName}</p>
-              <p><strong>👩‍👧 Mother:</strong> {filteredStudent.motherName}</p>
-              <p><strong>📞 Mobile:</strong> {filteredStudent.mobile}</p>
-            </div>
-          </div>
-        ) : (
-          <p className="text-gray-500 italic">No student found with given details.</p>
-        )}
-      </div>
-
-      {/* Add Form Modal with blur */}
-      {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-md flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 relative shadow-lg">
-            <button
-              onClick={closeAddForm}
-              className="absolute top-3 right-3 text-gray-600 hover:text-gray-900"
-              aria-label="Close form"
-            >
-              <FaTimes size={20} />
-            </button>
-
-            <h3 className="text-xl font-bold mb-6">Add Student - Step {formStep} of 2</h3>
-
-            {formStep === 1 && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Student Name"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="border rounded px-3 py-2 w-full mb-4"
-                />
-                <input
-                  type="text"
-                  placeholder="Student ID"
-                  value={newId}
-                  onChange={(e) => setNewId(e.target.value)}
-                  className="border rounded px-3 py-2 w-full mb-4"
-                />
-              </>
-            )}
-
-            {formStep === 2 && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Father's Name"
-                  value={newFatherName}
-                  onChange={(e) => setNewFatherName(e.target.value)}
-                  className="border rounded px-3 py-2 w-full mb-4"
-                />
-                <input
-                  type="text"
-                  placeholder="Mother's Name"
-                  value={newMotherName}
-                  onChange={(e) => setNewMotherName(e.target.value)}
-                  className="border rounded px-3 py-2 w-full mb-4"
-                />
-                <input
-                  type="text"
-                  placeholder="Mobile Number"
-                  value={newMobile}
-                  onChange={(e) => setNewMobile(e.target.value)}
-                  className="border rounded px-3 py-2 w-full mb-4"
-                />
-              </>
-            )}
-
-            <div className="flex justify-between">
-              {formStep === 2 && (
-                <button
-                  onClick={prevStep}
-                  className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
-                >
-                  Previous
-                </button>
-              )}
-
+      {activeSection !== "none" && (
+        <div className="flex items-center gap-4 mb-6 max-w-md">
+          <input
+            type="text"
+            placeholder="Search by Name or ID"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch();
+            }}
+          />
+          <button
+            onClick={handleSearch}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+            aria-label="Search"
+          >
+            <FaSearch />
+          </button>
+          {activeSection === "details" && (
+            <>
               <button
-                onClick={nextStep}
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition ml-auto"
+                onClick={openAddModal}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition flex items-center gap-2"
               >
-                {formStep === 1 ? "Next" : "Submit"}
+                <FaPlus /> Add
               </button>
-            </div>
-          </div>
+              <button
+                onClick={handleDelete}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition flex items-center gap-2"
+              >
+                <FaTrash /> Delete
+              </button>
+            </>
+          )}
         </div>
+      )}
+
+      <div className="flex-grow overflow-auto">
+        {activeSection === "details" && renderStudentTable()}
+        {activeSection === "marks" && renderMarksTable()}
+        {activeSection === "attendance" && renderAttendanceTable()}
+      </div>
+
+      {isModalOpen && (
+        <StudentFormModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          student={selectedStudent}
+          onSubmit={handleFormSubmit}
+        />
       )}
     </div>
   );
 };
 
 export default StudentDetailsSection;
+
+

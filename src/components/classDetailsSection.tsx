@@ -1,317 +1,344 @@
 
 import React, { useState } from "react";
-import classDataRaw, { ClassSection, Student } from "../data/classData";
-import { FaTimes } from "react-icons/fa";
+import { FaPlus, FaTrash, FaPencilAlt, FaChalkboardTeacher, FaSave, FaSchool } from "react-icons/fa";
+import classData, { ClassSection, Student } from "../data/classData";
 
-const classesList = [
-  "LKG", "UKG",
-  "1st", "2nd", "3rd", "4th", "5th",
-  "6th", "7th", "8th", "9th", "10th",
-  "11th", "12th",
-];
-const sectionsList = ["A", "B", "C"];
+interface StudentDetailsModalProps {
+  student: Student | null;
+  onClose: () => void;
+}
+
+const StudentDetailsModal: React.FC<StudentDetailsModalProps> = ({ student, onClose }) => {
+  if (!student) return null;
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded p-6 max-w-md w-full shadow-lg relative">
+        <h2 className="text-xl font-bold mb-4">Student Details</h2>
+        <p><strong>ID:</strong> {student.id}</p>
+        <p><strong>Name:</strong> {student.name}</p>
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 font-bold text-lg"
+          aria-label="Close modal"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const ClassDetailsSection: React.FC = () => {
-  // State: copy of class data (to allow edits)
-  const [classData, setClassData] = useState<ClassSection[]>(classDataRaw);
-
-  const [selectedClass, setSelectedClass] = useState<string>(classesList[0]);
-  const [selectedSection, setSelectedSection] = useState<string>(sectionsList[0]);
-
-  const [foundClassSection, setFoundClassSection] = useState<ClassSection | null>(null);
-
-  // Form states
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [classes, setClasses] = useState<ClassSection[]>(classData);
+  const [selectedClassIndex, setSelectedClassIndex] = useState<number | null>(null);
   const [newStudentName, setNewStudentName] = useState("");
   const [newStudentId, setNewStudentId] = useState("");
-  const [editTeacherMode, setEditTeacherMode] = useState(false);
-  const [editedTeacherName, setEditedTeacherName] = useState("");
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
+  const [studentDetailsModalOpen, setStudentDetailsModalOpen] = useState(false);
+  const [modalStudent, setModalStudent] = useState<Student | null>(null);
 
-  const handleSearch = () => {
-    const found = classData.find(
-      (cls) => cls.className === selectedClass && cls.section === selectedSection
-    );
-    setFoundClassSection(found || null);
-    if (found) {
-      setEditedTeacherName(found.teacherName); // reset teacher name edit field
-      setEditTeacherMode(false);
-      setShowAddForm(false);
+  // Local state to hold teacher selection before saving
+  const [tempTeacherName, setTempTeacherName] = useState<string>("");
+
+  const selectedClass = selectedClassIndex !== null ? classes[selectedClassIndex] : null;
+
+  // Update tempTeacherName when selected class changes
+  React.useEffect(() => {
+    if (selectedClass) {
+      setTempTeacherName(selectedClass.teacherName);
+      setSelectedStudentIds(new Set()); // reset selected students on class change
+    } else {
+      setTempTeacherName("");
+      setSelectedStudentIds(new Set());
     }
+  }, [selectedClassIndex]);
+
+  const handleTeacherChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTempTeacherName(e.target.value);
   };
 
-  const handleDeleteAllStudents = () => {
-    if (!foundClassSection) return;
-    if (
-      window.confirm(
-        `Are you sure you want to delete ALL students in ${selectedClass} - ${selectedSection}?`
+  const handleSaveTeacher = () => {
+    if (selectedClassIndex === null) return;
+    setClasses((prev) =>
+      prev.map((cls, idx) =>
+        idx === selectedClassIndex ? { ...cls, teacherName: tempTeacherName } : cls
       )
-    ) {
-      const newClassData = classData.map((cls) => {
-        if (cls.className === selectedClass && cls.section === selectedSection) {
-          return { ...cls, students: [] };
-        }
-        return cls;
-      });
-      setClassData(newClassData);
-      setFoundClassSection({ ...foundClassSection, students: [] });
-    }
+    );
+    alert("Class teacher updated!");
   };
 
-  const handleEditTeacher = () => {
-    setEditTeacherMode(true);
+  const toggleStudentCheckbox = (studentId: string) => {
+    setSelectedStudentIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(studentId)) newSet.delete(studentId);
+      else newSet.add(studentId);
+      return newSet;
+    });
   };
 
-  const saveTeacherName = () => {
-    if (!editedTeacherName.trim()) {
-      alert("Teacher name cannot be empty");
+  const handleDeleteSelected = () => {
+    if (selectedClassIndex === null) {
+      alert("Please select a class first.");
       return;
     }
-    const newClassData = classData.map((cls) => {
-      if (cls.className === selectedClass && cls.section === selectedSection) {
-        return { ...cls, teacherName: editedTeacherName.trim() };
-      }
-      return cls;
-    });
-    setClassData(newClassData);
-    setFoundClassSection({ ...foundClassSection!, teacherName: editedTeacherName.trim() });
-    setEditTeacherMode(false);
-  };
-
-  const handleAddStudent = () => {
-    setShowAddForm(true);
-  };
-
-  const saveNewStudent = () => {
-    if (!newStudentName.trim() || !newStudentId.trim()) {
-      alert("Please fill both Name and ID");
+    if (selectedStudentIds.size === 0) {
+      alert("Select at least one student to delete.");
       return;
     }
-    // Add new student to the data
-    const newStudent: Student = {
-      id: newStudentId.trim(),
-      name: newStudentName.trim(),
-    };
+    if (!window.confirm("Are you sure you want to delete selected students?")) return;
 
-    const newClassData = classData.map((cls) => {
-      if (cls.className === selectedClass && cls.section === selectedSection) {
-        return { ...cls, students: [...cls.students, newStudent] };
-      }
-      return cls;
-    });
-
-    setClassData(newClassData);
-
-    // Update displayed section data too
-    if (foundClassSection) {
-      setFoundClassSection({
-        ...foundClassSection,
-        students: [...foundClassSection.students, newStudent],
-      });
-    }
-
-    // Reset form & close
-    setNewStudentName("");
-    setNewStudentId("");
-    setShowAddForm(false);
+    setClasses((prev) =>
+      prev.map((cls, idx) =>
+        idx === selectedClassIndex
+          ? {
+              ...cls,
+              students: cls.students.filter((s) => !selectedStudentIds.has(s.id)),
+            }
+          : cls
+      )
+    );
+    setSelectedStudentIds(new Set());
   };
 
-  const closeAddForm = () => {
-    setShowAddForm(false);
+  const handleAddStudentOpen = () => {
     setNewStudentName("");
     setNewStudentId("");
+    setIsAddStudentOpen(true);
+  };
+
+  const handleAddStudentSubmit = () => {
+    if (selectedClassIndex === null) {
+      alert("Please select a class first.");
+      return;
+    }
+    if (!newStudentId.trim() || !newStudentName.trim()) {
+      alert("Please enter both student ID and name.");
+      return;
+    }
+    // Check duplicate ID in the class
+    if (selectedClass!.students.find((s) => s.id === newStudentId.trim())) {
+      alert("Student ID already exists in this class.");
+      return;
+    }
+    const newStudent: Student = { id: newStudentId.trim(), name: newStudentName.trim() };
+    setClasses((prev) =>
+      prev.map((cls, idx) =>
+        idx === selectedClassIndex
+          ? { ...cls, students: [...cls.students, newStudent] }
+          : cls
+      )
+    );
+    setIsAddStudentOpen(false);
+  };
+
+  const openStudentDetails = (student: Student) => {
+    setModalStudent(student);
+    setStudentDetailsModalOpen(true);
+  };
+
+  const closeStudentDetails = () => {
+    setStudentDetailsModalOpen(false);
+    setModalStudent(null);
   };
 
   return (
     <div className="h-full flex flex-col px-6 py-4">
-      {/* Top 30% Header aligned left with icon and effects */}
-      <div className="h-[30%] flex items-center bg-indigo-100 px-6 rounded-md shadow-lg mb-6">
-        <div className="flex items-center gap-3">
-          {/* Example icon */}
-          <svg
-            className="w-10 h-10 text-indigo-600 animate-pulse"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 14l9-5-9-5-9 5 9 5z"
-            ></path>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 14l6.16-3.422A12.083 12.083 0 0112 21.75a12.083 12.083 0 01-6.16-10.172L12 14z"
-            ></path>
-          </svg>
-
-          <h2 className="text-4xl font-extrabold text-indigo-700 drop-shadow-md select-none">
-            Class Details
-          </h2>
-        </div>
+      {/* Top 30% Section */}
+      <div className="h-[30%] flex items-center bg-indigo-100 px-6 rounded-md shadow-lg mb-6 select-none">
+        <FaSchool
+          className="text-indigo-700 text-6xl mr-4 animate-pulse drop-shadow-lg"
+          aria-hidden="true"
+        />
+        <h1 className="text-indigo-700 text-4xl font-extrabold tracking-wide bg-gradient-to-r from-indigo-800 via-indigo-600 to-indigo-800 bg-clip-text text-transparent">
+          Class Details
+        </h1>
       </div>
 
-      {/* Dropdown selectors */}
-      <div className="flex gap-4 flex-wrap mb-6">
+      {/* Select Class & Section */}
+      <div className="mb-4 max-w-md">
+        <label className="block mb-2 font-semibold text-gray-700">
+          Select Class - Section
+        </label>
         <select
-          value={selectedClass}
-          onChange={(e) => setSelectedClass(e.target.value)}
-          className="border rounded px-3 py-2"
-        >
-          {classesList.map((cls) => (
-            <option key={cls} value={cls}>
-              {cls}
-            </option>
-          ))}
-        </select>
-        <select
-          value={selectedSection}
-          onChange={(e) => setSelectedSection(e.target.value)}
-          className="border rounded px-3 py-2"
-        >
-          {sectionsList.map((sec) => (
-            <option key={sec} value={sec}>
-              {sec}
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={handleSearch}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
-        >
-          Search
-        </button>
-
-        <button
-          onClick={handleAddStudent}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-        >
-          Add
-        </button>
-
-        <button
-          onClick={handleDeleteAllStudents}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-          disabled={!foundClassSection || foundClassSection.students.length === 0}
-          title={
-            !foundClassSection || foundClassSection.students.length === 0
-              ? "No students to delete"
-              : "Delete All Students"
+          value={selectedClassIndex ?? ""}
+          onChange={(e) =>
+            setSelectedClassIndex(e.target.value === "" ? null : Number(e.target.value))
           }
+          className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
-          Delete All Students
+          <option value="" disabled>
+            Select Class - Section
+          </option>
+          {classes.map((cls, idx) => (
+            <option key={`${cls.className}-${cls.section}`} value={idx}>
+              {cls.className} - {cls.section}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Change Class Teacher Dropdown with Save */}
+      <div className="mb-6 max-w-md flex items-center gap-3">
+        <div className="flex-1">
+          <label className="block mb-2 font-semibold text-gray-700">Class Teacher</label>
+          <select
+            disabled={selectedClassIndex === null}
+            value={tempTeacherName}
+            onChange={handleTeacherChange}
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {[...new Set(classes.map((cls) => cls.teacherName))].map((teacher) => (
+              <option key={teacher} value={teacher}>
+                {teacher}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          onClick={handleSaveTeacher}
+          disabled={selectedClassIndex === null}
+          title="Save Teacher"
+          aria-label="Save Teacher"
+          className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white rounded px-4 py-2 flex items-center gap-2 transition"
+        >
+          <FaSave />
+          Save
         </button>
       </div>
 
-      {/* Show searched class-section details */}
-      {foundClassSection ? (
-        <div className="bg-white rounded shadow p-6 max-w-4xl w-full">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <strong>Class Teacher: </strong>
-              {editTeacherMode ? (
-                <>
-                  <input
-                    type="text"
-                    value={editedTeacherName}
-                    onChange={(e) => setEditedTeacherName(e.target.value)}
-                    className="border px-2 py-1 rounded mr-2"
-                  />
-                  <button
-                    onClick={saveTeacherName}
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setEditTeacherMode(false)}
-                    className="ml-2 text-red-600 font-bold"
-                    title="Cancel edit"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span className="text-indigo-700 font-semibold">{foundClassSection.teacherName}</span>
-                  <button
-                    onClick={handleEditTeacher}
-                    className="ml-4 bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 transition"
-                  >
-                    Edit Teacher
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+      {/* Buttons */}
+      <div className="flex gap-4 mb-4">
+        <button
+          onClick={handleAddStudentOpen}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition flex items-center gap-2"
+          aria-label="Add Student"
+          title="Add Student"
+          disabled={selectedClassIndex === null}
+        >
+          <FaPlus />
+        </button>
+        <button
+          onClick={handleDeleteSelected}
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition flex items-center gap-2"
+          aria-label="Delete Selected Students"
+          title="Delete Selected Students"
+          disabled={selectedClassIndex === null}
+        >
+          <FaTrash />
+        </button>
+      </div>
 
-          {/* Students Table */}
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-indigo-600 text-white">
-                <th className="border border-gray-300 p-2 text-left">Student ID</th>
-                <th className="border border-gray-300 p-2 text-left">Student Name</th>
+      {/* Students Table */}
+      <div className="overflow-auto flex-grow max-h-[50vh]">
+        {selectedClass === null ? (
+          <p className="text-gray-500 italic">Please select a class-section to see students.</p>
+        ) : (
+          <table className="min-w-full border border-gray-300">
+            <thead className="bg-indigo-100">
+              <tr>
+                <th className="border px-4 py-2">
+                  <input
+                    type="checkbox"
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      if (checked) {
+                        setSelectedStudentIds(new Set(selectedClass.students.map((s) => s.id)));
+                      } else {
+                        setSelectedStudentIds(new Set());
+                      }
+                    }}
+                    checked={
+                      selectedClass.students.length > 0 &&
+                      selectedStudentIds.size === selectedClass.students.length
+                    }
+                    aria-label="Select all students"
+                    disabled={selectedClass.students.length === 0}
+                  />
+                </th>
+                <th className="border px-4 py-2 text-left">Student Name</th>
+                <th className="border px-4 py-2 text-left">Student ID</th>
+                <th className="border px-4 py-2 text-center">Details</th>
               </tr>
             </thead>
             <tbody>
-              {foundClassSection.students.length === 0 ? (
+              {selectedClass.students.length === 0 ? (
                 <tr>
-                  <td colSpan={2} className="text-center p-4 italic text-gray-500">
-                    No students found in this class & section.
+                  <td colSpan={4} className="text-center p-4 italic text-gray-500">
+                    No students in this class.
                   </td>
                 </tr>
               ) : (
-                foundClassSection.students.map((student) => (
+                selectedClass.students.map((student) => (
                   <tr key={student.id} className="hover:bg-indigo-50">
-                    <td className="border border-gray-300 p-2">{student.id}</td>
-                    <td className="border border-gray-300 p-2">{student.name}</td>
+                    <td className="border px-4 py-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedStudentIds.has(student.id)}
+                        onChange={() => toggleStudentCheckbox(student.id)}
+                        aria-label={`Select student ${student.name}`}
+                      />
+                    </td>
+                    <td className="border px-4 py-2">{student.name}</td>
+                    <td className="border px-4 py-2">{student.id}</td>
+                    <td className="border px-4 py-2 text-center">
+                      <button
+                        onClick={() => openStudentDetails(student)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                        aria-label={`View details of ${student.name}`}
+                        title="View Details"
+                      >
+                        <FaPencilAlt />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
-        </div>
-      ) : (
-        <p className="text-gray-500 italic">Search a class and section to view details.</p>
-      )}
+        )}
+      </div>
 
-      {/* Add student form modal */}
-      {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 relative shadow-lg">
-            <button
-              onClick={closeAddForm}
-              className="absolute top-3 right-3 text-gray-600 hover:text-gray-900"
-              aria-label="Close form"
-            >
-              <FaTimes size={20} />
-            </button>
-            <h3 className="text-xl font-bold mb-4">Add Student</h3>
-            <input
-              type="text"
-              placeholder="Student Name"
-              value={newStudentName}
-              onChange={(e) => setNewStudentName(e.target.value)}
-              className="border rounded px-3 py-2 w-full mb-3"
-            />
+      {/* Add Student Modal */}
+      {isAddStudentOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded p-6 max-w-md w-full shadow-lg relative">
+            <h2 className="text-xl font-bold mb-4">Add Student</h2>
             <input
               type="text"
               placeholder="Student ID"
               value={newStudentId}
               onChange={(e) => setNewStudentId(e.target.value)}
-              className="border rounded px-3 py-2 w-full mb-3"
+              className="w-full border rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            <button
-              onClick={saveNewStudent}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
-            >
-              Save
-            </button>
+            <input
+              type="text"
+              placeholder="Student Name"
+              value={newStudentName}
+              onChange={(e) => setNewStudentName(e.target.value)}
+              className="w-full border rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setIsAddStudentOpen(false)}
+                className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddStudentSubmit}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+              >
+                Add
+              </button>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Student Details Modal */}
+      {studentDetailsModalOpen && modalStudent && (
+        <StudentDetailsModal student={modalStudent} onClose={closeStudentDetails} />
       )}
     </div>
   );

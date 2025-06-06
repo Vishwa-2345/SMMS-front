@@ -1,170 +1,121 @@
-// // // src/data/classData.ts
-// // export interface Student {
-// //   id: string;
-// //   name: string;
-// // }
 
-// // export interface ClassData {
-// //   class: string;
-// //   section: string;
-// //   teacherName: string;
-// //   teacherId: string;
-// //   students: Student[];
-// // }
 
-// // const classData: ClassData[] = [
-// //   {
-// //     class: "1",
-// //     section: "A",
-// //     teacherName: "Mrs. Priya",
-// //     teacherId: "T101",
-// //     students: [
-// //       { id: "S001", name: "Arjun" },
-// //       { id: "S002", name: "Divya" },
-// //     ],
-// //   },
-// //   {
-// //     class: "2",
-// //     section: "B",
-// //     teacherName: "Mr. Ravi",
-// //     teacherId: "T102",
-// //     students: [
-// //       { id: "S003", name: "Kumar" },
-// //       { id: "S004", name: "Sneha" },
-// //     ],
-// //   },
-// // ];
-
-// // export default classData;
-
-// // src/data/classData.ts
-// export interface Student {
+// export interface StudentBasic {
 //   id: string;
 //   name: string;
 // }
 
-// export interface ClassData {
-//   class: string;    // e.g. "LKG", "1st", "2nd", ... "12th"
-//   section: string;  // "A", "B", or "C"
-//   classTeacher: string;
-//   students: Student[];
+// export interface ClassSection {
+//   className: string; // e.g. "LKG", "1st", "2nd", ... "12th"
+//   section: string;   // e.g. "A", "B", "C"
+//   teacherName: string;
+//   students: StudentBasic[];
 // }
 
-// const classData: ClassData[] = [
+// const classData: ClassSection[] = [
 //   {
-//     class: "LKG",
+//     className: "LKG",
 //     section: "A",
-//     classTeacher: "Mrs. Anita Sharma",
+//     teacherName: "Mrs. Kavita Singh",
 //     students: [
 //       { id: "LKG-A-01", name: "Riya Singh" },
 //       { id: "LKG-A-02", name: "Arjun Patel" },
 //     ],
 //   },
 //   {
-//     class: "LKG",
+//     className: "LKG",
 //     section: "B",
-//     classTeacher: "Mr. Sanjay Kumar",
+//     teacherName: "Mr. Sanjay Kumar",
 //     students: [
 //       { id: "LKG-B-01", name: "Meera Joshi" },
 //       { id: "LKG-B-02", name: "Aditya Rao" },
 //     ],
 //   },
 //   {
-//     class: "LKG",
-//     section: "C",
-//     classTeacher: "Ms. Neha Verma",
-//     students: [
-//       { id: "LKG-C-01", name: "Kabir Khan" },
-//       { id: "LKG-C-02", name: "Ananya Das" },
-//     ],
-//   },
-//   {
-//     class: "1st",
+//     className: "1st",
 //     section: "A",
-//     classTeacher: "Mrs. Kavita Singh",
+//     teacherName: "Mrs. Kavita Sharma",
 //     students: [
 //       { id: "1A-01", name: "Siddharth Gupta" },
 //       { id: "1A-02", name: "Aarav Mehta" },
 //     ],
 //   },
 //   {
-//     class: "1st",
+//     className: "1st",
 //     section: "B",
-//     classTeacher: "Mr. Rajesh Iyer",
+//     teacherName: "Mr. Rajesh Iyer",
 //     students: [
 //       { id: "1B-01", name: "Diya Sharma" },
-//       { id: "1B-02", name: "Rahul Verma" },
+//       { id: "1B-02", name: "Siddharth Gupta" },
 //     ],
 //   },
 //   {
-//     class: "1st",
-//     section: "C",
-//     classTeacher: "Ms. Pooja Nair",
-//     students: [
-//       { id: "1C-01", name: "Sneha Reddy" },
-//       { id: "1C-02", name: "Karan Singh" },
-//     ],
-//   },
-//   // Add more classes similarly (2nd to 12th)
-//   {
-//     class: "2nd",
+//     className: "2nd",
 //     section: "A",
-//     classTeacher: "Mrs. Sunita Joshi",
+//     teacherName: "Mrs. Sunita Joshi",
 //     students: [
 //       { id: "2A-01", name: "Manish Kumar" },
 //       { id: "2A-02", name: "Rohit Sharma" },
 //     ],
 //   },
 //   {
-//     class: "2nd",
-//     section: "B",
-//     classTeacher: "Mr. Amit Patel",
-//     students: [
-//       { id: "2B-01", name: "Nisha Gupta" },
-//       { id: "2B-02", name: "Aakash Sharma" },
-//     ],
-//   },
-//   {
-//     class: "2nd",
-//     section: "C",
-//     classTeacher: "Ms. Rekha Singh",
-//     students: [
-//       { id: "2C-01", name: "Sonal Mehta" },
-//       { id: "2C-02", name: "Vikram Das" },
-//     ],
-//   },
-//   {
-//     class: "12th",
+//     className: "8th",
 //     section: "A",
-//     classTeacher: "Mr. Anil Kumar",
+//     teacherName: "Mr. David Williams",
+//     students: [
+//       { id: "8A-01", name: "Charlie Williams" },
+//       { id: "8A-02", name: "Nina Thomas" },
+//     ],
+//   },
+//   {
+//     className: "9th",
+//     section: "B",
+//     teacherName: "Mrs. Anna Smith",
+//     students: [
+//       { id: "9B-01", name: "Bob Smith" },
+//       { id: "9B-02", name: "Lara Croft" },
+//     ],
+//   },
+//   {
+//     className: "10th",
+//     section: "A",
+//     teacherName: "Mr. Robert Johnson",
+//     students: [
+//       { id: "10A-01", name: "Alice Johnson" },
+//       { id: "10A-02", name: "Mark Twain" },
+//     ],
+//   },
+//   {
+//     className: "11th",
+//     section: "A",
+//     teacherName: "Mrs. Laura Green",
+//     students: [
+//       { id: "11A-01", name: "Diana Green" },
+//       { id: "11A-02", name: "Kevin Hart" },
+//     ],
+//   },
+//   {
+//     className: "12th",
+//     section: "A",
+//     teacherName: "Mrs. Anita Sharma",
 //     students: [
 //       { id: "12A-01", name: "Kavya Sharma" },
-//       { id: "12A-02", name: "Rohan Jain" },
 //     ],
 //   },
 //   {
-//     class: "12th",
+//     className: "12th",
 //     section: "B",
-//     classTeacher: "Mrs. Neeta Shah",
+//     teacherName: "Mrs. Neeta Shah",
 //     students: [
 //       { id: "12B-01", name: "Tarun Mehta" },
 //       { id: "12B-02", name: "Sanya Patel" },
-//     ],
-//   },
-//   {
-//     class: "12th",
-//     section: "C",
-//     classTeacher: "Ms. Swati Rao",
-//     students: [
-//       { id: "12C-01", name: "Aditya Verma" },
-//       { id: "12C-02", name: "Naina Singh" },
 //     ],
 //   },
 // ];
 
 // export default classData;
 
-// src/data/classData.ts
+
 export interface Student {
   id: string;
   name: string;
@@ -181,28 +132,76 @@ const classData: ClassSection[] = [
   {
     className: "LKG",
     section: "A",
-    teacherName: "Mrs. Kavita Singh",
+    teacherName: "Mrs. Priya",
     students: [
       { id: "LKG-A-01", name: "Riya Singh" },
       { id: "LKG-A-02", name: "Arjun Patel" },
     ],
   },
   {
+    className: "LKG",
+    section: "B",
+    teacherName: "Mr. Arjun",
+    students: [
+      { id: "LKG-B-01", name: "Meera Joshi" },
+      { id: "LKG-B-02", name: "Aditya Rao" },
+    ],
+  },
+  {
+    className: "1st",
+    section: "A",
+    teacherName: "Ms. Kavya",
+    students: [
+      { id: "1A-01", name: "Siddharth Gupta" },
+      { id: "1A-02", name: "Aarav Mehta" },
+    ],
+  },
+  {
     className: "1st",
     section: "B",
-    teacherName: "Mr. Rajesh Iyer",
+    teacherName: "Mr. Sharma",
     students: [
       { id: "1B-01", name: "Diya Sharma" },
-      { id: "1B-02", name: "Siddharth Gupta" },
+      { id: "1B-02", name: "Rahul Verma" },
+    ],
+  },
+  {
+    className: "2nd",
+    section: "A",
+    teacherName: "Mrs. Priya",
+    students: [
+      { id: "2A-01", name: "Manish Kumar" },
+      { id: "2A-02", name: "Rohit Sharma" },
+    ],
+  },
+  {
+    className: "2nd",
+    section: "B",
+    teacherName: "Mr. Arjun",
+    students: [
+      { id: "2B-01", name: "Nisha Gupta" },
+      { id: "2B-02", name: "Aakash Sharma" },
     ],
   },
   {
     className: "12th",
     section: "A",
-    teacherName: "Mrs. Anita Sharma",
-    students: [{ id: "12A-01", name: "Kavya Sharma" }],
+    teacherName: "Ms. Kavya",
+    students: [
+      { id: "12A-01", name: "Kavya Sharma" },
+      { id: "12A-02", name: "Rohan Jain" },
+    ],
   },
-  // Add more classes and sections as needed
+  {
+    className: "12th",
+    section: "B",
+    teacherName: "Mr. Sharma",
+    students: [
+      { id: "12B-01", name: "Tarun Mehta" },
+      { id: "12B-02", name: "Sanya Patel" },
+    ],
+  },
 ];
 
 export default classData;
+
