@@ -1,59 +1,5 @@
 
 
-// const staffData = [
-//   {
-//     id: "ST001",
-//     name: "Ravi Kumar",
-//     gender: "Male",
-//     department: "Mathematics",
-//     designation: "Senior Lecturer",
-//     contact: "9876543210",
-//     email: "ravi.kumar@example.com",
-//     address: "123 Main Street, Delhi",
-//     salary: "50000",
-//     absentDays: "2",
-//     attendance: "98%",
-//     qualification: "M.Sc. Mathematics",
-//     subjects: "Algebra, Calculus",
-//     photoUrl: "https://via.placeholder.com/100x100.png?text=Ravi",
-//   },
-//   {
-//     id: "ST002",
-//     name: "Anjali Sharma",
-//     gender: "Female",
-//     department: "Science",
-//     designation: "Assistant Professor",
-//     contact: "9876501234",
-//     email: "anjali.sharma@example.com",
-//     address: "45 Green Avenue, Mumbai",
-//     salary: "48000",
-//     absentDays: "1",
-//     attendance: "99%",
-//     qualification: "M.Sc. Physics",
-//     subjects: "Physics, Chemistry",
-//     photoUrl: "https://via.placeholder.com/100x100.png?text=Anjali",
-//   },
-//   {
-//     id: "ST003",
-//     name: "Vikas Mehta",
-//     gender: "Male",
-//     department: "Computer Science",
-//     designation: "Lab Assistant",
-//     contact: "9876009988",
-//     email: "vikas.mehta@example.com",
-//     address: "78 Tech Road, Bangalore",
-//     salary: "35000",
-//     absentDays: "3",
-//     attendance: "95%",
-//     qualification: "B.Sc. Computer Science",
-//     subjects: "Networking, Hardware",
-//     photoUrl: "https://via.placeholder.com/100x100.png?text=Vikas",
-//   },
-// ];
-
-// export default staffData;
-
-
 export interface Staff {
   id: string;
   name: string;
@@ -63,12 +9,16 @@ export interface Staff {
   contact: string;
   email: string;
   address: string;
-  salary: string;       // can be changed to number if preferred
-  absentDays: string;   // can be changed to number if preferred
-  attendance: string;   // % as string, can convert to number if needed
+  salary: string;
+  absentDays: string;
+  attendance: string;
   qualification: string;
-  subjects: string;     // comma separated list or array if preferred
+  subjects: string;
   photoUrl?: string;
+
+  // Added fields for login
+  username: string;
+  password: string;
 }
 
 const staffData: Staff[] = [
@@ -87,6 +37,8 @@ const staffData: Staff[] = [
     qualification: "M.Sc. Mathematics",
     subjects: "Algebra, Calculus",
     photoUrl: "https://via.placeholder.com/100x100.png?text=Ravi",
+    username: "ravi",
+    password: "ravi123"
   },
   {
     id: "ST002",
@@ -103,6 +55,8 @@ const staffData: Staff[] = [
     qualification: "M.Sc. Physics",
     subjects: "Physics, Chemistry",
     photoUrl: "https://via.placeholder.com/100x100.png?text=Anjali",
+    username: "anjali",
+    password: "anjali123"
   },
   {
     id: "ST003",
@@ -119,6 +73,8 @@ const staffData: Staff[] = [
     qualification: "B.Sc. Computer Science",
     subjects: "Networking, Hardware",
     photoUrl: "https://via.placeholder.com/100x100.png?text=Vikas",
+    username: "vikas",
+    password: "vikas123"
   },
   {
     id: "ST004",
@@ -135,6 +91,8 @@ const staffData: Staff[] = [
     qualification: "M.A. English",
     subjects: "English Literature, Grammar",
     photoUrl: "https://via.placeholder.com/100x100.png?text=Sunita",
+    username: "sunita",
+    password: "sunita123"
   },
   {
     id: "ST005",
@@ -151,6 +109,8 @@ const staffData: Staff[] = [
     qualification: "M.A. History",
     subjects: "Ancient History, Modern History",
     photoUrl: "https://via.placeholder.com/100x100.png?text=Manoj",
+    username: "manoj",
+    password: "manoj123"
   },
 ];
 
