@@ -1,9 +1,11 @@
 
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaUserAlt, FaLock } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
+import studentsData, { Student } from '../data/studentsData';  // Adjust path as needed
 
 interface StudentLoginPageProps {
   onClose: () => void;
@@ -15,10 +17,16 @@ const StudentLoginPage: React.FC<StudentLoginPageProps> = ({ onClose }) => {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    if (username === 'student' && password === 'student123') {
-      navigate('/student-dashboard');
+    // Find student with matching username and password
+    const matchedStudent = studentsData.find(
+      (student) => student.username === username && student.password === password
+    );
+
+    if (matchedStudent) {
+      // Redirect to dashboard with student data in state
+      navigate('/student-dashboard', { state: { student: matchedStudent } });
     } else {
-      alert('Invalid student credentials');
+      alert('Invalid username or password');
     }
   };
 
@@ -46,7 +54,7 @@ const StudentLoginPage: React.FC<StudentLoginPageProps> = ({ onClose }) => {
           <FaUserAlt className="mr-2 text-gray-500" />
           <input
             type="text"
-            placeholder="Email or Username"
+            placeholder="Username"
             className="w-full outline-none"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -84,5 +92,3 @@ const StudentLoginPage: React.FC<StudentLoginPageProps> = ({ onClose }) => {
 };
 
 export default StudentLoginPage;
-
-

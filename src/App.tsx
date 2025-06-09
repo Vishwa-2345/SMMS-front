@@ -13,7 +13,7 @@ import StudentDashboard from "./pages/StudentDasboard";
 import StudentDetailsSection from "./components/StudentDetailsSection";
 import StaffDetailsSection from "./components/StaffDetailsSection";
 import TimetableSection from "./components/TimeTableSection";
-import ExamSection from "./components/ExamSection"; // ✅ New import
+import ExamSection from "./components/ExamSection";
 
 const App: React.FC = () => {
   return (
@@ -50,11 +50,10 @@ const App: React.FC = () => {
         <Route path="/student-details" element={<StudentDetailsSection />} />
         <Route path="/staff-details" element={<StaffDetailsSection />} />
         <Route path="/timetable" element={<TimetableSection />} />
-        <Route path="/exam" element={<ExamSection />} /> {/* ✅ Added exam section route */}
+        <Route path="/exam" element={<ExamSection />} />
       </Routes>
     </Router>
   );
 };
 
 export default App;
-
